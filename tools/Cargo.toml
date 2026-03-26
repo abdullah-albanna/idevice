@@ -38,6 +38,9 @@ ns-keyed-archive = "0.1.2"
 uuid = "1.16"
 futures-util = { version = "0.3" }
 
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
 [features]
 default = ["aws-lc"]
 aws-lc = ["idevice/aws-lc"]
