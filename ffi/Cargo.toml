@@ -39,6 +39,7 @@ house_arrest = ["idevice/house_arrest"]
 installation_proxy = ["idevice/installation_proxy"]
 springboardservices = ["idevice/springboardservices"]
 misagent = ["idevice/misagent"]
+mobilebackup2 = ["idevice/mobilebackup2"]
 mobile_image_mounter = ["idevice/mobile_image_mounter"]
 location_simulation = ["idevice/location_simulation"]
 pair = ["idevice/pair"]
@@ -79,6 +80,7 @@ full = [
   "springboardservices",
   "syslog_relay",
   "screenshotr",
+  "mobilebackup2",
 ]
 default = ["full", "aws-lc"]
 

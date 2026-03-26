@@ -63,6 +63,7 @@ impl CliBackupDelegate {
 }
 
 impl BackupDelegate for CliBackupDelegate {
+    #[allow(clippy::unnecessary_cast)]
     fn get_free_disk_space(&self, path: &Path) -> u64 {
         #[cfg(unix)]
         {
@@ -76,7 +77,7 @@ impl BackupDelegate for CliBackupDelegate {
                 let mut stat = MaybeUninit::<libc::statvfs>::uninit();
                 if libc::statvfs(c_path.as_ptr(), stat.as_mut_ptr()) == 0 {
                     let stat = stat.assume_init();
-                    (stat.f_bavail as u64) * stat.f_frsize
+                    (stat.f_bavail as u64) * (stat.f_frsize as u64)
                 } else {
                     0
                 }
