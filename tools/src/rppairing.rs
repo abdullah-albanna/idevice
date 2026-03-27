@@ -4,9 +4,9 @@
 use idevice::{
     IdeviceService, RemoteXpcClient,
     core_device_proxy::CoreDeviceProxy,
+    provider::IdeviceProvider,
     remote_pairing::{RemotePairingClient, RpPairingFile},
     rsd::RsdHandshake,
-    provider::IdeviceProvider,
 };
 use jkcli::{CollectedArguments, JkArgument, JkCommand};
 
@@ -143,12 +143,10 @@ async fn pair_via_usb(provider: &dyn IdeviceProvider, hostname: &str, output_pat
     let mut rpc = RemotePairingClient::new(conn, hostname, &mut rpf);
 
     match rpc.connect(async |_| "000000".to_string(), 0u8).await {
-        Ok(()) => {
-            match rpf.write_to_file(output_path).await {
-                Ok(()) => println!("Paired! Saved to {output_path}"),
-                Err(e) => eprintln!("Failed to save pairing file: {e}"),
-            }
-        }
+        Ok(()) => match rpf.write_to_file(output_path).await {
+            Ok(()) => println!("Paired! Saved to {output_path}"),
+            Err(e) => eprintln!("Failed to save pairing file: {e}"),
+        },
         Err(e) => eprintln!("RPPairing failed: {e:?}"),
     }
 }
@@ -194,7 +192,10 @@ async fn tunnel_usb(provider: &dyn IdeviceProvider) {
         }
     };
 
-    println!("\nTunneled RSD Services ({} total):", handshake.services.len());
+    println!(
+        "\nTunneled RSD Services ({} total):",
+        handshake.services.len()
+    );
     for (name, svc) in &handshake.services {
         println!(
             "  {name}: port={} xpc={} ver={:?}",

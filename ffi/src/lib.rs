@@ -43,8 +43,6 @@ pub mod mobile_image_mounter;
 pub mod mobileactivationd;
 #[cfg(feature = "mobilebackup2")]
 pub mod mobilebackup2;
-#[cfg(feature = "remote_pairing")]
-pub mod rp_pairing_file;
 #[cfg(feature = "notification_proxy")]
 pub mod notification_proxy;
 #[cfg(feature = "syslog_relay")]
@@ -57,6 +55,8 @@ pub mod preboard_service;
 pub mod provider;
 #[cfg(feature = "restore_service")]
 pub mod restore_service;
+#[cfg(feature = "remote_pairing")]
+pub mod rp_pairing_file;
 #[cfg(feature = "xpc")]
 pub mod rsd;
 #[cfg(feature = "screenshotr")]

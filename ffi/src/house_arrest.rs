@@ -11,8 +11,8 @@ use idevice::{
 };
 
 use crate::{
-    IdeviceFfiError, IdeviceHandle, afc::AfcClientHandle, core_device_proxy::AdapterHandle, ffi_err,
-    provider::IdeviceProviderHandle, rsd::RsdHandshakeHandle, run_sync_local,
+    IdeviceFfiError, IdeviceHandle, afc::AfcClientHandle, core_device_proxy::AdapterHandle,
+    ffi_err, provider::IdeviceProviderHandle, rsd::RsdHandshakeHandle, run_sync_local,
 };
 
 pub struct HouseArrestClientHandle(pub HouseArrestClient);

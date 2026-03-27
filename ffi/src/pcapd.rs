@@ -2,7 +2,9 @@
 
 use std::ptr::null_mut;
 
-use idevice::{IdeviceError, IdeviceService, RsdService, pcapd::PcapdClient, provider::IdeviceProvider};
+use idevice::{
+    IdeviceError, IdeviceService, RsdService, pcapd::PcapdClient, provider::IdeviceProvider,
+};
 
 use crate::{
     IdeviceFfiError, IdeviceHandle, core_device_proxy::AdapterHandle, ffi_err,

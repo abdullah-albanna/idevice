@@ -187,9 +187,7 @@ impl<R: ReadWrite> RpPairingSocketProvider for RemoteXpcClient<R> {
         Box::pin(async move {
             let msg = self.recv_root().await.unwrap();
             debug!("Received RemoteXPC {}", pretty_print_plist(&msg));
-            let msg = msg
-                .into_dictionary()
-                .and_then(|mut x| x.remove("value"));
+            let msg = msg.into_dictionary().and_then(|mut x| x.remove("value"));
 
             let msg = match msg {
                 Some(v) => v,

@@ -6,9 +6,7 @@ use std::{
 };
 
 use idevice::{
-    IdeviceError, IdeviceService,
-    core_device_proxy::CoreDeviceProxy,
-    provider::IdeviceProvider,
+    IdeviceError, IdeviceService, core_device_proxy::CoreDeviceProxy, provider::IdeviceProvider,
 };
 
 use crate::{

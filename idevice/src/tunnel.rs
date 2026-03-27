@@ -53,9 +53,7 @@ impl<R: ReadWrite> CdTunnel<R> {
             serde_json::to_vec(&request).map_err(|e| IdeviceError::InternalError(e.to_string()))?;
 
         stream.write_all(CDTUNNEL_MAGIC).await?;
-        stream
-            .write_all(&(body.len() as u16).to_be_bytes())
-            .await?;
+        stream.write_all(&(body.len() as u16).to_be_bytes()).await?;
         stream.write_all(&body).await?;
         stream.flush().await?;
 

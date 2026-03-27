@@ -9,8 +9,8 @@
 //! # Features
 //! - `tunnel_tcp_stack`: Enables software TCP/IP tunnel creation using jktcp.
 
-use crate::{Idevice, IdeviceError, IdeviceService, ReadWrite, obf};
 use crate::tunnel::{CdTunnel, TunnelInfo};
+use crate::{Idevice, IdeviceError, IdeviceService, ReadWrite, obf};
 
 /// A high-level client for the `com.apple.internal.devicecompute.CoreDeviceProxy` service.
 ///

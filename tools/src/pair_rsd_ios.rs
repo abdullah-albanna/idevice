@@ -18,8 +18,7 @@ use idevice::{
     RemoteXpcClient, RsdService,
     core_device::AppServiceClient,
     remote_pairing::{
-        RemotePairingClient, RpPairingFile, RpPairingSocket,
-        connect_tls_psk_tunnel_native,
+        RemotePairingClient, RpPairingFile, RpPairingSocket, connect_tls_psk_tunnel_native,
     },
     rsd::RsdHandshake,
     tcp,
@@ -75,7 +74,11 @@ async fn main() {
     let wifi_pair = matches.get_flag("wifi-pair");
     WIFI_PAIR_MODE.store(wifi_pair, std::sync::atomic::Ordering::Relaxed);
 
-    let service_name = if wifi_pair { "remotepairing" } else { "remoted" };
+    let service_name = if wifi_pair {
+        "remotepairing"
+    } else {
+        "remoted"
+    };
     println!("Browsing for _{service_name}._tcp ...");
 
     let mut browser = MdnsBrowser::new(
@@ -303,12 +306,7 @@ fn on_service_discovered(
     }
 }
 
-async fn wifi_pair_flow(
-    host_name: &str,
-    service_address: &str,
-    scope_id: Option<u32>,
-    port: u16,
-) {
+async fn wifi_pair_flow(host_name: &str, service_address: &str, scope_id: Option<u32>, port: u16) {
     println!("Wi-Fi pairing: connecting to {host_name} port {port}...");
 
     let stream = match connect_to_service_port(host_name, service_address, scope_id, port).await {
@@ -348,9 +346,7 @@ async fn wifi_pair_flow(
         .await
     {
         Ok(()) => {
-            rpf.write_to_file("ios_pairing_file.plist")
-                .await
-                .unwrap();
+            rpf.write_to_file("ios_pairing_file.plist").await.unwrap();
             println!("Paired! Pairing file saved to ios_pairing_file.plist");
         }
         Err(e) => {

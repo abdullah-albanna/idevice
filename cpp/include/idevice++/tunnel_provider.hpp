@@ -34,12 +34,22 @@ Result<RpPairingFile, FfiError> pair_usb(Provider&          provider,
                                          PinCallback        pin_callback = nullptr,
                                          void*              pin_context  = nullptr);
 
-/// Creates an RSD tunnel over the network using an existing RPPairing file.
-/// For iOS, pass nullptr for pin_callback.
-Result<UsbTunnelResult, FfiError> create_network_tunnel(const idevice_sockaddr* addr,
-                                                        idevice_socklen_t       addr_len,
-                                                        RpPairingFile&          pairing_file,
-                                                        PinCallback             pin_callback = nullptr,
-                                                        void*                   pin_context  = nullptr);
+/// Creates a tunnel over the network via RemoteXPC.
+/// Use for devices discovered via _remoted._tcp (NCM / USB Ethernet).
+Result<UsbTunnelResult, FfiError> create_remotexpc_tunnel(const idevice_sockaddr* addr,
+                                                          idevice_socklen_t       addr_len,
+                                                          const std::string&      hostname,
+                                                          RpPairingFile&          pairing_file,
+                                                          PinCallback             pin_callback = nullptr,
+                                                          void*                   pin_context  = nullptr);
+
+/// Creates a tunnel over the network via raw RPPairing protocol.
+/// Use for devices discovered via _remotepairing._tcp (Wi-Fi / LAN).
+Result<UsbTunnelResult, FfiError> create_rppairing_tunnel(const idevice_sockaddr* addr,
+                                                          idevice_socklen_t       addr_len,
+                                                          const std::string&      hostname,
+                                                          RpPairingFile&          pairing_file,
+                                                          PinCallback             pin_callback = nullptr,
+                                                          void*                   pin_context  = nullptr);
 
 } // namespace IdeviceFFI

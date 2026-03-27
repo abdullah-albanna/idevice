@@ -368,8 +368,9 @@ pub unsafe extern "C" fn mobilebackup2_new(
         return ffi_err!(IdeviceError::FfiInvalidArg);
     }
     let socket = unsafe { Box::from_raw(socket) }.0;
-    let res: Result<MobileBackup2Client, IdeviceError> =
-        run_sync_local(async { <MobileBackup2Client as IdeviceService>::from_stream(socket).await });
+    let res: Result<MobileBackup2Client, IdeviceError> = run_sync_local(async {
+        <MobileBackup2Client as IdeviceService>::from_stream(socket).await
+    });
     match res {
         Ok(r) => {
             unsafe { *client = Box::into_raw(Box::new(MobileBackup2ClientHandle(r))) };
