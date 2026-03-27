@@ -10,6 +10,14 @@ repository = "https://github.com/jkcoxson/idevice"
 keywords = ["lockdownd", "ios"]
 default-run = "idevice-tools"
 
+[[bin]]
+name = "pair_apple_tv"
+path = "src/pair_apple_tv.rs"
+
+[[bin]]
+name = "pair_rsd_ios"
+path = "src/pair_rsd_ios.rs"
+
 # [[bin]]
 # name = "core_device_proxy_tun"
 # path = "src/core_device_proxy_tun.rs"
@@ -37,6 +45,7 @@ plist-macro = { version = "0.1.3" }
 ns-keyed-archive = "0.1.2"
 uuid = "1.16"
 futures-util = { version = "0.3" }
+zeroconf = { version = "0.17" }
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
