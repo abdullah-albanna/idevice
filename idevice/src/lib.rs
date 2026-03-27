@@ -1074,6 +1074,7 @@ impl IdeviceError {
             IdeviceError::Base64DecodeError(_) => -72,
             IdeviceError::PairVerifyFailed => -73,
             IdeviceError::SrpAuthFailed => -74,
+            #[cfg(feature = "remote_pairing")]
             IdeviceError::ChachaEncryption(_) => -75,
 
             #[cfg(feature = "notification_proxy")]
