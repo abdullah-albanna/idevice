@@ -20,6 +20,18 @@ pub struct LockdownClient {
     pub idevice: crate::Idevice,
 }
 
+#[cfg(feature = "rsd")]
+impl crate::RsdService for LockdownClient {
+    fn rsd_service_name() -> std::borrow::Cow<'static, str> {
+        crate::obf!("com.apple.mobile.lockdown.remote.trusted")
+    }
+    async fn from_stream(stream: Box<dyn crate::ReadWrite>) -> Result<Self, crate::IdeviceError> {
+        let mut idevice = crate::Idevice::new(stream, "");
+        idevice.rsd_checkin().await?;
+        Ok(Self::new(idevice))
+    }
+}
+
 impl IdeviceService for LockdownClient {
     /// Returns the lockdown service name as registered with the device
     fn service_name() -> std::borrow::Cow<'static, str> {
