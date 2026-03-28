@@ -87,11 +87,7 @@ impl CoreDeviceProxy {
         // Re-box through the jktcp trait.
         let mtu = self.tunnel.info.mtu as usize;
         let stream: Box<dyn crate::ReadWrite> = self.tunnel.into_inner();
-        let mut adapter = crate::tcp::adapter::Adapter::new(
-            Box::new(stream),
-            our_ip,
-            their_ip,
-        );
+        let mut adapter = crate::tcp::adapter::Adapter::new(Box::new(stream), our_ip, their_ip);
         adapter.set_mss(mtu.saturating_sub(60));
         Ok(adapter)
     }
