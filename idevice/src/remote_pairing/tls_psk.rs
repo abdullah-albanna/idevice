@@ -22,6 +22,8 @@ const TLS_12: [u8; 2] = [0x03, 0x03];
 const CT_HANDSHAKE: u8 = 0x16;
 const CT_CHANGE_CIPHER_SPEC: u8 = 0x14;
 const CT_APPLICATION_DATA: u8 = 0x17;
+/// Maximum plaintext bytes per TLS record (RFC 5246 §6.2.1)
+const TLS_MAX_PLAINTEXT: usize = 16384;
 const HS_CLIENT_HELLO: u8 = 0x01;
 const HS_SERVER_HELLO: u8 = 0x02;
 const HS_SERVER_HELLO_DONE: u8 = 0x0E;
@@ -538,13 +540,15 @@ impl<S> std::fmt::Debug for TlsPskStream<S> {
 }
 
 impl<S: AsyncRead + AsyncWrite + Unpin + Send> TlsPskStream<S> {
-    /// Encrypt and send application data.
+    /// Encrypt and send application data, splitting into multiple TLS records if needed.
     pub async fn write_app_data(&mut self, data: &[u8]) -> Result<(), IdeviceError> {
-        let encrypted = encrypt_record(&self.keys, self.write_seq, CT_APPLICATION_DATA, data);
-        self.write_seq += 1;
-        self.inner
-            .write_all(&make_record(CT_APPLICATION_DATA, &encrypted))
-            .await?;
+        for chunk in data.chunks(TLS_MAX_PLAINTEXT) {
+            let encrypted = encrypt_record(&self.keys, self.write_seq, CT_APPLICATION_DATA, chunk);
+            self.write_seq += 1;
+            self.inner
+                .write_all(&make_record(CT_APPLICATION_DATA, &encrypted))
+                .await?;
+        }
         self.inner.flush().await?;
         Ok(())
     }
@@ -665,8 +669,11 @@ impl<S: AsyncRead + AsyncWrite + Unpin + Send + Sync> AsyncWrite for TlsPskStrea
             }
         }
 
+        // Clamp to TLS max record size to avoid oversized records
+        let chunk = &data[..data.len().min(TLS_MAX_PLAINTEXT)];
+
         // Encrypt the new data into a TLS record
-        let encrypted = encrypt_record(&this.keys, this.write_seq, CT_APPLICATION_DATA, data);
+        let encrypted = encrypt_record(&this.keys, this.write_seq, CT_APPLICATION_DATA, chunk);
         let record = make_record(CT_APPLICATION_DATA, &encrypted);
         this.write_seq += 1;
 
@@ -676,7 +683,7 @@ impl<S: AsyncRead + AsyncWrite + Unpin + Send + Sync> AsyncWrite for TlsPskStrea
                     // Buffer the unsent remainder
                     this.write_buf.extend_from_slice(&record[written..]);
                 }
-                Poll::Ready(Ok(data.len()))
+                Poll::Ready(Ok(chunk.len()))
             }
             Poll::Ready(Err(e)) => {
                 this.write_seq -= 1;

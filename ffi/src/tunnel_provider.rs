@@ -56,10 +56,12 @@ async fn finish_tunnel(
         .server_address
         .parse()
         .map_err(|e| IdeviceError::InternalError(format!("{e}")))?;
+    let mtu = tunnel.info.mtu as usize;
     let rsd_port = tunnel.info.server_rsd_port;
 
     let raw = tunnel.into_inner();
-    let adapter = idevice::tcp::adapter::Adapter::new(Box::new(raw), client_ip, server_ip);
+    let mut adapter = idevice::tcp::adapter::Adapter::new(Box::new(raw), client_ip, server_ip);
+    adapter.set_mss(mtu.saturating_sub(60));
     let mut adapter = adapter.to_async_handle();
 
     let rsd_stream = adapter

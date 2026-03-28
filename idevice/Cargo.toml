@@ -24,7 +24,7 @@ plist = { version = "1.8" }
 plist-macro = { version = "0.1.6" }
 serde = { version = "1", features = ["derive"] }
 ns-keyed-archive = { version = "0.1.4", optional = true }
-jktcp = { version = "0.1.0", optional = true }
+jktcp = { version = "0.1.1", optional = true }
 
 thiserror = { version = "2" }
 tracing = { version = "0.1.41" }

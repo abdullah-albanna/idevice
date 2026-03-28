@@ -85,11 +85,14 @@ impl CoreDeviceProxy {
         // The inner stream is Box<dyn crate::ReadWrite> but jktcp wants Box<dyn jktcp::ReadWrite>.
         // Both traits have the same bounds, and IdeviceSocket implements both.
         // Re-box through the jktcp trait.
+        let mtu = self.tunnel.info.mtu as usize;
         let stream: Box<dyn crate::ReadWrite> = self.tunnel.into_inner();
-        Ok(crate::tcp::adapter::Adapter::new(
+        let mut adapter = crate::tcp::adapter::Adapter::new(
             Box::new(stream),
             our_ip,
             their_ip,
-        ))
+        );
+        adapter.set_mss(mtu.saturating_sub(60));
+        Ok(adapter)
     }
 }
