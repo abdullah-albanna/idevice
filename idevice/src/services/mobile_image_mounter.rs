@@ -64,7 +64,9 @@ impl ImageMounter {
 
         match res.remove("EntryList") {
             Some(plist::Value::Array(i)) => Ok(i),
-            _ => Err(IdeviceError::UnexpectedResponse),
+            _ => Err(IdeviceError::UnexpectedResponse(
+                "missing EntryList array in CopyDevices response".into(),
+            )),
         }
     }
 
@@ -151,7 +153,9 @@ impl ImageMounter {
             Ok(i) => i,
             Err(e) => {
                 tracing::error!("Could not parse image size as u64: {e:?}");
-                return Err(IdeviceError::UnexpectedResponse);
+                return Err(IdeviceError::UnexpectedResponse(
+                    "image size exceeds u64 range".into(),
+                ));
             }
         };
 
@@ -168,10 +172,16 @@ impl ImageMounter {
             Some(plist::Value::String(s)) => {
                 if s.as_str() != "ReceiveBytesAck" {
                     tracing::error!("Received bad response to SendBytes: {s:?}");
-                    return Err(IdeviceError::UnexpectedResponse);
+                    return Err(IdeviceError::UnexpectedResponse(
+                        "expected ReceiveBytesAck Status in upload response".into(),
+                    ));
                 }
             }
-            _ => return Err(IdeviceError::UnexpectedResponse),
+            _ => {
+                return Err(IdeviceError::UnexpectedResponse(
+                    "missing Status in ReceiveBytes response".into(),
+                ));
+            }
         }
 
         debug!("Sending image bytes");
@@ -184,10 +194,16 @@ impl ImageMounter {
             Some(plist::Value::String(s)) => {
                 if s.as_str() != "Complete" {
                     tracing::error!("Image send failure: {s:?}");
-                    return Err(IdeviceError::UnexpectedResponse);
+                    return Err(IdeviceError::UnexpectedResponse(
+                        "expected Complete Status after image upload".into(),
+                    ));
                 }
             }
-            _ => return Err(IdeviceError::UnexpectedResponse),
+            _ => {
+                return Err(IdeviceError::UnexpectedResponse(
+                    "missing Status after image upload".into(),
+                ));
+            }
         }
 
         Ok(())
@@ -227,10 +243,16 @@ impl ImageMounter {
             Some(plist::Value::String(s)) => {
                 if s.as_str() != "Complete" {
                     tracing::error!("Image send failure: {s:?}");
-                    return Err(IdeviceError::UnexpectedResponse);
+                    return Err(IdeviceError::UnexpectedResponse(
+                        "expected Complete Status in MountImage response".into(),
+                    ));
                 }
             }
-            _ => return Err(IdeviceError::UnexpectedResponse),
+            _ => {
+                return Err(IdeviceError::UnexpectedResponse(
+                    "missing Status in MountImage response".into(),
+                ));
+            }
         }
 
         Ok(())
@@ -259,7 +281,9 @@ impl ImageMounter {
         let res = self.idevice.read_plist().await?;
         match res.get("Status") {
             Some(plist::Value::String(s)) if s.as_str() == "Complete" => Ok(()),
-            _ => Err(IdeviceError::UnexpectedResponse),
+            _ => Err(IdeviceError::UnexpectedResponse(
+                "expected Complete Status in UnmountImage response".into(),
+            )),
         }
     }
 
@@ -315,7 +339,9 @@ impl ImageMounter {
         let res = self.idevice.read_plist().await?;
         match res.get("DeveloperModeStatus") {
             Some(plist::Value::Boolean(status)) => Ok(*status),
-            _ => Err(IdeviceError::UnexpectedResponse),
+            _ => Err(IdeviceError::UnexpectedResponse(
+                "missing DeveloperModeStatus boolean in response".into(),
+            )),
         }
     }
 
@@ -342,7 +368,9 @@ impl ImageMounter {
         let res = self.idevice.read_plist().await?;
         match res.get("PersonalizationNonce") {
             Some(plist::Value::Data(nonce)) => Ok(nonce.clone()),
-            _ => Err(IdeviceError::UnexpectedResponse),
+            _ => Err(IdeviceError::UnexpectedResponse(
+                "missing PersonalizationNonce data in response".into(),
+            )),
         }
     }
 
@@ -369,7 +397,9 @@ impl ImageMounter {
         let res = self.idevice.read_plist().await?;
         match res.get("PersonalizationIdentifiers") {
             Some(plist::Value::Dictionary(identifiers)) => Ok(identifiers.clone()),
-            _ => Err(IdeviceError::UnexpectedResponse),
+            _ => Err(IdeviceError::UnexpectedResponse(
+                "missing PersonalizationIdentifiers dictionary in response".into(),
+            )),
         }
     }
 
@@ -556,19 +586,31 @@ impl ImageMounter {
         let board_id = match personalization_identifiers.get("BoardId") {
             Some(plist::Value::Integer(b)) => match b.as_unsigned() {
                 Some(b) => b,
-                None => return Err(IdeviceError::UnexpectedResponse),
+                None => {
+                    return Err(IdeviceError::UnexpectedResponse(
+                        "BoardId is not an unsigned integer".into(),
+                    ));
+                }
             },
             _ => {
-                return Err(IdeviceError::UnexpectedResponse);
+                return Err(IdeviceError::UnexpectedResponse(
+                    "missing BoardId in personalization identifiers".into(),
+                ));
             }
         };
         let chip_id = match personalization_identifiers.get("ChipID") {
             Some(plist::Value::Integer(b)) => match b.as_unsigned() {
                 Some(b) => b,
-                None => return Err(IdeviceError::UnexpectedResponse),
+                None => {
+                    return Err(IdeviceError::UnexpectedResponse(
+                        "ChipID is not an unsigned integer".into(),
+                    ));
+                }
             },
             _ => {
-                return Err(IdeviceError::UnexpectedResponse);
+                return Err(IdeviceError::UnexpectedResponse(
+                    "missing ChipID in personalization identifiers".into(),
+                ));
             }
         };
 
@@ -713,7 +755,9 @@ impl ImageMounter {
             plist::Value::Dictionary(r) => r,
             _ => {
                 warn!("Apple returned a non-dictionary plist");
-                return Err(IdeviceError::UnexpectedResponse);
+                return Err(IdeviceError::UnexpectedResponse(
+                    "TSS response is not a dictionary".into(),
+                ));
             }
         };
 
@@ -721,7 +765,9 @@ impl ImageMounter {
             Some(plist::Value::Data(d)) => Ok(d),
             _ => {
                 warn!("TSS response didn't contain ApImg4Ticket data");
-                Err(IdeviceError::UnexpectedResponse)
+                Err(IdeviceError::UnexpectedResponse(
+                    "missing ApImg4Ticket data in TSS response".into(),
+                ))
             }
         }
     }
