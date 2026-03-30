@@ -9,6 +9,8 @@
 
 use tracing::debug;
 
+#[cfg(feature = "rsd")]
+use crate::RsdService;
 use crate::{Idevice, IdeviceError, IdeviceService, obf};
 use sha2::{Digest, Sha384};
 
@@ -536,6 +538,116 @@ impl ImageMounter {
 
                 // On failure, the socket closes. Open a new one.
                 self.idevice = Self::connect(provider).await?.idevice;
+
+                // Get manifest from TSS
+                let manifest_dict: plist::Dictionary = plist::from_bytes(build_manifest)?;
+                self.get_manifest_from_tss(&manifest_dict, unique_chip_id)
+                    .await?
+            }
+        };
+
+        debug!("Uploading image");
+        self.upload_image_with_progress("Personalized", &image, manifest.clone(), callback, state)
+            .await?;
+
+        debug!("Mounting image");
+        self.mount_image("Personalized", manifest, Some(trust_cache), info_plist)
+            .await?;
+
+        Ok(())
+    }
+
+    /// Mounts a personalized image with automatic manifest handling
+    ///
+    /// # Arguments
+    /// * `provider` - Device connection provider (used for reconnection if needed)
+    /// * `image` - The image data
+    /// * `trust_cache` - Trust cache data
+    /// * `build_manifest` - Build manifest data
+    /// * `info_plist` - Optional info plist for the image
+    /// * `unique_chip_id` - Device's unique chip ID
+    ///
+    /// # Errors
+    /// Returns `IdeviceError` if mounting fails
+    #[cfg(all(feature = "tss", feature = "rsd"))]
+    #[allow(clippy::too_many_arguments)]
+    pub async fn mount_personalized_rsd(
+        &mut self,
+        provider: &mut impl crate::provider::RsdProvider,
+        handshake: &mut crate::rsd::RsdHandshake,
+        image: Vec<u8>,
+        trust_cache: Vec<u8>,
+        build_manifest: &[u8],
+        info_plist: Option<plist::Value>,
+        unique_chip_id: u64,
+    ) -> Result<(), IdeviceError> {
+        self.mount_personalized_with_callback_rsd(
+            provider,
+            handshake,
+            image,
+            trust_cache,
+            build_manifest,
+            info_plist,
+            unique_chip_id,
+            |_| async {},
+            (),
+        )
+        .await
+    }
+
+    /// Mounts a personalized image with progress callbacks
+    ///
+    /// # Important
+    /// This may close the socket on failure, requiring reconnection.
+    ///
+    /// # Arguments
+    /// * `provider` - Device connection provider
+    /// * `image` - The image data
+    /// * `trust_cache` - Trust cache data
+    /// * `build_manifest` - Build manifest data
+    /// * `info_plist` - Optional info plist for the image
+    /// * `unique_chip_id` - Device's unique chip ID
+    /// * `callback` - Progress callback
+    /// * `state` - State to pass to callback
+    ///
+    /// # Type Parameters
+    /// * `Fut` - Future type returned by callback
+    /// * `S` - Type of state passed to callback
+    ///
+    /// # Errors
+    /// Returns `IdeviceError` if mounting fails
+    #[cfg(all(feature = "tss", feature = "rsd"))]
+    #[allow(clippy::too_many_arguments)]
+    pub async fn mount_personalized_with_callback_rsd<Fut, S>(
+        &mut self,
+        provider: &mut impl crate::provider::RsdProvider,
+        handshake: &mut crate::rsd::RsdHandshake,
+        image: Vec<u8>,
+        trust_cache: Vec<u8>,
+        build_manifest: &[u8],
+        info_plist: Option<plist::Value>,
+        unique_chip_id: u64,
+        callback: impl Fn(((usize, usize), S)) -> Fut,
+        state: S,
+    ) -> Result<(), IdeviceError>
+    where
+        Fut: std::future::Future<Output = ()>,
+        S: Clone,
+    {
+        // Try to fetch personalization manifest
+        let mut hasher = Sha384::new();
+        hasher.update(&image);
+        let image_hash = hasher.finalize();
+        let manifest = match self
+            .query_personalization_manifest("DeveloperDiskImage", image_hash.to_vec())
+            .await
+        {
+            Ok(manifest) => manifest,
+            Err(e) => {
+                debug!("Device didn't contain a manifest: {e:?}, fetching from TSS");
+
+                // On failure, the socket closes. Open a new one.
+                self.idevice = Self::connect_rsd(provider, handshake).await?.idevice;
 
                 // Get manifest from TSS
                 let manifest_dict: plist::Dictionary = plist::from_bytes(build_manifest)?;
