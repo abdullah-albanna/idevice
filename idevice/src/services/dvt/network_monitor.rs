@@ -115,10 +115,8 @@ impl<'a, R: ReadWrite> NetworkMonitorClient<'a, R> {
     /// Stops monitoring.
     pub async fn stop_monitoring(&mut self) -> Result<(), IdeviceError> {
         self.channel
-            .call_method(Some(Value::String("stopMonitoring".into())), None, true)
-            .await?;
-        self.channel.read_message().await?;
-        Ok(())
+            .call_method(Some(Value::String("stopMonitoring".into())), None, false)
+            .await
     }
 
     /// Reads the next network event from the device.

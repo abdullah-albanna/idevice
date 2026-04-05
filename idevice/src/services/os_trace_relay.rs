@@ -117,18 +117,22 @@ impl OsTraceRelayClient {
         // Result
         let res = self.idevice.read_plist().await?;
 
-        if let Some(pids) = res.get("Pids").and_then(|x| x.as_array()) {
-            pids.iter()
-                .map(|x| {
-                    x.as_unsigned_integer()
-                        .ok_or(IdeviceError::UnexpectedResponse(
-                            "pid entry is not an unsigned integer".into(),
+        // Device returns { "Payload": { "<pid>": { "ProcessName": "..." }, ... } }
+        // where the PIDs are the string keys of the Payload dictionary.
+        if let Some(payload) = res.get("Payload").and_then(|x| x.as_dictionary()) {
+            payload
+                .keys()
+                .map(|k| {
+                    k.parse::<u64>().map_err(|_| {
+                        IdeviceError::UnexpectedResponse(format!(
+                            "PidList Payload key is not a valid PID: {k}"
                         ))
+                    })
                 })
                 .collect()
         } else {
             Err(IdeviceError::UnexpectedResponse(
-                "missing Pids array in PidList response".into(),
+                "missing Payload dictionary in PidList response".into(),
             ))
         }
     }
