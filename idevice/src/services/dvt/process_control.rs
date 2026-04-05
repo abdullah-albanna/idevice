@@ -35,7 +35,7 @@
 //! ```
 
 use plist::{Dictionary, Value};
-use tracing::warn;
+use tracing::{debug, warn};
 
 use super::errors::DvtError;
 use crate::{IdeviceError, ReadWrite, dvt::message::AuxValue, obf};
@@ -118,7 +118,7 @@ impl<'a, R: ReadWrite> ProcessControlClient<'a, R> {
             .call_method(
                 Some(method),
                 Some(vec![
-                    AuxValue::archived_value("/private/"),
+                    AuxValue::archived_value(""),
                     AuxValue::archived_value(bundle_id.into()),
                     AuxValue::archived_value(env_vars),
                     AuxValue::archived_value(arguments),
@@ -129,6 +129,8 @@ impl<'a, R: ReadWrite> ProcessControlClient<'a, R> {
             .await?;
 
         let res = self.channel.read_message().await?;
+        debug!("Launch response message: {res:#?}");
+        debug!("Launch response data: {:?}", res.data);
 
         match res.data {
             Some(Value::Integer(p)) => match p.as_unsigned() {

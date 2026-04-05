@@ -23,7 +23,7 @@ openssl = { version = "0.10", optional = true }
 plist = { version = "1.8" }
 plist-macro = { version = "0.1.6" }
 serde = { version = "1", features = ["derive"] }
-ns-keyed-archive = { version = "0.1.4", optional = true }
+ns-keyed-archive = { version = "0.1.5", optional = true }
 jktcp = { version = "0.1.1", optional = true }
 
 thiserror = { version = "2" }
@@ -91,6 +91,13 @@ crashreportcopymobile = ["afc"]
 debug_proxy = []
 diagnostics_relay = []
 dvt = ["dep:byteorder", "dep:ns-keyed-archive"]
+energy_monitor = ["dvt"]
+graphics = ["dvt", "rsd"]
+device_info = ["dvt"]
+application_listing = ["dvt"]
+condition_inducer = ["dvt"]
+network_monitor = ["dvt"]
+sysmontap = ["dvt", "energy_monitor"]
 heartbeat = ["tokio/macros", "tokio/time"]
 house_arrest = ["afc"]
 installation_proxy = [
@@ -140,7 +147,7 @@ tunnel_tcp_stack = ["dep:jktcp"]
 tss = ["dep:uuid", "dep:reqwest"]
 tunneld = ["dep:serde_json", "dep:json", "dep:reqwest"]
 usbmuxd = ["tokio/net", "dep:futures"]
-xpc = ["dep:indexmap", "dep:uuid", "dep:async-stream"]
+xpc = ["dep:indexmap", "dep:uuid", "dep:async-stream", "dep:futures"]
 full = [
   "afc",
   "amfi",
@@ -152,6 +159,13 @@ full = [
   "debug_proxy",
   "diagnostics_relay",
   "dvt",
+  "energy_monitor",
+  "graphics",
+  "device_info",
+  "application_listing",
+  "condition_inducer",
+  "network_monitor",
+  "sysmontap",
   "heartbeat",
   "house_arrest",
   "installation_proxy",

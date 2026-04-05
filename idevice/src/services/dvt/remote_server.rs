@@ -72,9 +72,9 @@ pub struct RemoteServerClient<R: ReadWrite> {
     /// The underlying device connection
     idevice: R,
     /// Counter for message identifiers
-    current_message: u32,
+    pub(crate) current_message: u32,
     /// Next available channel number
-    new_channel: u32,
+    pub(crate) new_channel: u32,
     /// Map of channel numbers to their message queues
     channels: HashMap<u32, VecDeque<Message>>,
 }
@@ -149,27 +149,30 @@ impl<R: ReadWrite> RemoteServerClient<R> {
             ),
         ];
 
+        // Insert channel BEFORE sending request, so responses on this channel
+        // are cached and not discarded when read_message loops
+        self.channels.insert(code, VecDeque::new());
+
         let mut root = self.root_channel();
+        // Don't expect a reply - channel creation is fire-and-forget
+        // Responses come on the new channel, not the root channel
         root.call_method(
             Some("_requestChannelWithCode:identifier:"),
             Some(args),
-            true,
+            false,
         )
         .await?;
-
-        let res = root.read_message().await?;
-        if res.data.is_some() {
-            return Err(IdeviceError::UnexpectedResponse(
-                "expected empty response when creating channel, got data".into(),
-            ));
-        }
-
-        self.channels.insert(code, VecDeque::new());
 
         self.build_channel(code)
     }
 
-    fn build_channel<'c>(&'c mut self, code: u32) -> Result<Channel<'c, R>, IdeviceError> {
+    /// Builds a channel with the given code
+    ///
+    /// Public for use by energy_monitor and other services
+    pub(crate) fn build_channel<'c>(
+        &'c mut self,
+        code: u32,
+    ) -> Result<Channel<'c, R>, IdeviceError> {
         Ok(Channel {
             client: self,
             channel: code,

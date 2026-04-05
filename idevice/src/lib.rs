@@ -819,8 +819,10 @@ pub enum IdeviceError {
     Heartbeat(#[from] HeartbeatError),
     #[error(transparent)]
     CdTunnel(#[from] CdTunnelError),
+    #[cfg(feature = "usbmuxd")]
     #[error(transparent)]
     Usbmuxd(#[from] usbmuxd::errors::UsbmuxdError),
+    #[cfg(feature = "remote_pairing")]
     #[error(transparent)]
     RemotePairing(#[from] remote_pairing::errors::RemotePairingError),
     #[cfg(feature = "xpc")]
@@ -971,7 +973,9 @@ impl IdeviceError {
             // 100+: Service sub-error enums
             IdeviceError::Heartbeat(_) => 100,
             IdeviceError::CdTunnel(_) => 101,
+            #[cfg(feature = "usbmuxd")]
             IdeviceError::Usbmuxd(_) => 102,
+            #[cfg(feature = "remote_pairing")]
             IdeviceError::RemotePairing(_) => 103,
             #[cfg(feature = "xpc")]
             IdeviceError::Xpc(_) => 104,
@@ -999,7 +1003,9 @@ impl IdeviceError {
         match self {
             IdeviceError::Heartbeat(e) => e.sub_code(),
             IdeviceError::CdTunnel(e) => e.sub_code(),
+            #[cfg(feature = "usbmuxd")]
             IdeviceError::Usbmuxd(e) => e.sub_code(),
+            #[cfg(feature = "remote_pairing")]
             IdeviceError::RemotePairing(e) => e.sub_code(),
             #[cfg(feature = "xpc")]
             IdeviceError::Xpc(e) => e.sub_code(),

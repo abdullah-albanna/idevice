@@ -35,6 +35,11 @@ crashreportcopymobile = ["idevice/crashreportcopymobile"]
 debug_proxy = ["idevice/debug_proxy"]
 diagnostics_relay = ["idevice/diagnostics_relay"]
 dvt = ["idevice/dvt"]
+device_info = ["idevice/device_info"]
+application_listing = ["idevice/application_listing"]
+condition_inducer = ["idevice/condition_inducer"]
+network_monitor = ["idevice/network_monitor"]
+sysmontap = ["idevice/sysmontap"]
 heartbeat = ["idevice/heartbeat"]
 notification_proxy = ["idevice/notification_proxy"]
 house_arrest = ["idevice/house_arrest"]
@@ -72,6 +77,11 @@ full = [
   "debug_proxy",
   "diagnostics_relay",
   "dvt",
+  "device_info",
+  "application_listing",
+  "condition_inducer",
+  "network_monitor",
+  "sysmontap",
   "heartbeat",
   "house_arrest",
   "installcoordination_proxy",
