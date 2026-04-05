@@ -6,7 +6,9 @@
 // fire-and-receive pattern against a real device.
 
 use crate::run_test;
-use idevice::{IdeviceService, provider::IdeviceProvider, services::mobilebackup2::MobileBackup2Client};
+use idevice::{
+    IdeviceService, provider::IdeviceProvider, services::mobilebackup2::MobileBackup2Client,
+};
 
 pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failure: &mut u32) {
     run_test!(

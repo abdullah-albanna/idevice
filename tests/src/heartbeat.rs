@@ -4,12 +4,9 @@ use crate::run_test;
 use idevice::{IdeviceService, provider::IdeviceProvider, services::heartbeat::HeartbeatClient};
 
 pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failure: &mut u32) {
-    run_test!(
-        "heartbeat: connect",
-        success,
-        failure,
-        async { HeartbeatClient::connect(provider).await.map(|_| ()) }
-    );
+    run_test!("heartbeat: connect", success, failure, async {
+        HeartbeatClient::connect(provider).await.map(|_| ())
+    });
 
     let mut client = match HeartbeatClient::connect(provider).await {
         Ok(c) => c,

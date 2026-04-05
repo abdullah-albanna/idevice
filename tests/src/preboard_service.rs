@@ -5,15 +5,11 @@
 
 use crate::run_test;
 use idevice::{
-    IdeviceService, provider::IdeviceProvider,
-    services::preboard_service::PreboardServiceClient,
+    IdeviceService, provider::IdeviceProvider, services::preboard_service::PreboardServiceClient,
 };
 
 pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failure: &mut u32) {
-    run_test!(
-        "preboard_service: connect",
-        success,
-        failure,
-        async { PreboardServiceClient::connect(provider).await.map(|_| ()) }
-    );
+    run_test!("preboard_service: connect", success, failure, async {
+        PreboardServiceClient::connect(provider).await.map(|_| ())
+    });
 }

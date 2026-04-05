@@ -7,19 +7,15 @@ use std::time::Duration;
 
 use crate::run_test;
 use idevice::{
-    IdeviceService, provider::IdeviceProvider,
-    services::bt_packet_logger::BtPacketLoggerClient,
+    IdeviceService, provider::IdeviceProvider, services::bt_packet_logger::BtPacketLoggerClient,
 };
 
 const RECV_TIMEOUT: Duration = Duration::from_secs(5);
 
 pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failure: &mut u32) {
-    run_test!(
-        "bt_packet_logger: connect",
-        success,
-        failure,
-        async { BtPacketLoggerClient::connect(provider).await.map(|_| ()) }
-    );
+    run_test!("bt_packet_logger: connect", success, failure, async {
+        BtPacketLoggerClient::connect(provider).await.map(|_| ())
+    });
 
     let mut client = match BtPacketLoggerClient::connect(provider).await {
         Ok(c) => c,

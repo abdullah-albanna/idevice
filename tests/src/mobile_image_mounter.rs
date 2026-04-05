@@ -2,24 +2,18 @@
 
 use crate::run_test;
 use idevice::{
-    IdeviceService, provider::IdeviceProvider,
-    services::mobile_image_mounter::ImageMounter,
+    IdeviceService, provider::IdeviceProvider, services::mobile_image_mounter::ImageMounter,
 };
 
 pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failure: &mut u32) {
-    run_test!(
-        "mobile_image_mounter: connect",
-        success,
-        failure,
-        async { ImageMounter::connect(provider).await.map(|_| ()) }
-    );
+    run_test!("mobile_image_mounter: connect", success, failure, async {
+        ImageMounter::connect(provider).await.map(|_| ())
+    });
 
     let mut client = match ImageMounter::connect(provider).await {
         Ok(c) => c,
         Err(e) => {
-            println!(
-                "  mobile_image_mounter: cannot connect ({e}), skipping remaining tests"
-            );
+            println!("  mobile_image_mounter: cannot connect ({e}), skipping remaining tests");
             *failure += 1;
             return;
         }

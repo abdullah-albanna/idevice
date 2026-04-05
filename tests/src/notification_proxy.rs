@@ -7,19 +7,14 @@ use idevice::{
 };
 
 pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failure: &mut u32) {
-    run_test!(
-        "notification_proxy: connect",
-        success,
-        failure,
-        async { NotificationProxyClient::connect(provider).await.map(|_| ()) }
-    );
+    run_test!("notification_proxy: connect", success, failure, async {
+        NotificationProxyClient::connect(provider).await.map(|_| ())
+    });
 
     let mut client = match NotificationProxyClient::connect(provider).await {
         Ok(c) => c,
         Err(e) => {
-            println!(
-                "  notification_proxy: cannot connect ({e}), skipping remaining tests"
-            );
+            println!("  notification_proxy: cannot connect ({e}), skipping remaining tests");
             *failure += 1;
             return;
         }
@@ -34,9 +29,7 @@ pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failur
         failure,
         async {
             // post_notification is fire-and-forget; success means no error
-            client
-                .post_notification("com.apple.language.changed")
-                .await
+            client.post_notification("com.apple.language.changed").await
         }
     );
 

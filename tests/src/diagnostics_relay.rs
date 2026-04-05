@@ -1,15 +1,14 @@
 // Jackson Coxson
 
 use crate::run_test;
-use idevice::{IdeviceService, provider::IdeviceProvider, services::diagnostics_relay::DiagnosticsRelayClient};
+use idevice::{
+    IdeviceService, provider::IdeviceProvider, services::diagnostics_relay::DiagnosticsRelayClient,
+};
 
 pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failure: &mut u32) {
-    run_test!(
-        "diagnostics_relay: connect",
-        success,
-        failure,
-        async { DiagnosticsRelayClient::connect(provider).await.map(|_| ()) }
-    );
+    run_test!("diagnostics_relay: connect", success, failure, async {
+        DiagnosticsRelayClient::connect(provider).await.map(|_| ())
+    });
 
     let mut client = match DiagnosticsRelayClient::connect(provider).await {
         Ok(c) => c,
@@ -32,19 +31,13 @@ pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failur
         }
     );
 
-    run_test!(
-        "diagnostics_relay: gasguage",
-        success,
-        failure,
-        async { client.gasguage().await.map(|_| ()) }
-    );
+    run_test!("diagnostics_relay: gasguage", success, failure, async {
+        client.gasguage().await.map(|_| ())
+    });
 
-    run_test!(
-        "diagnostics_relay: wifi",
-        success,
-        failure,
-        async { client.wifi().await.map(|_| ()) }
-    );
+    run_test!("diagnostics_relay: wifi", success, failure, async {
+        client.wifi().await.map(|_| ())
+    });
 
     run_test!(
         "diagnostics_relay: ioregistry (IOPMPowerSource)",

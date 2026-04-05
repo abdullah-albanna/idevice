@@ -1,15 +1,14 @@
 // Jackson Coxson
 
 use crate::run_test;
-use idevice::{IdeviceService, provider::IdeviceProvider, services::house_arrest::HouseArrestClient};
+use idevice::{
+    IdeviceService, provider::IdeviceProvider, services::house_arrest::HouseArrestClient,
+};
 
 pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failure: &mut u32) {
-    run_test!(
-        "house_arrest: connect",
-        success,
-        failure,
-        async { HouseArrestClient::connect(provider).await.map(|_| ()) }
-    );
+    run_test!("house_arrest: connect", success, failure, async {
+        HouseArrestClient::connect(provider).await.map(|_| ())
+    });
 
     // vend_container consumes the client, requiring a fresh connect each time.
     // System apps typically reject house_arrest; treat PermDenied/ObjectNotFound as a

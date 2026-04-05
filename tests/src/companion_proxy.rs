@@ -4,17 +4,13 @@
 
 use crate::run_test;
 use idevice::{
-    IdeviceService, provider::IdeviceProvider,
-    services::companion_proxy::CompanionProxy,
+    IdeviceService, provider::IdeviceProvider, services::companion_proxy::CompanionProxy,
 };
 
 pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failure: &mut u32) {
-    run_test!(
-        "companion_proxy: connect",
-        success,
-        failure,
-        async { CompanionProxy::connect(provider).await.map(|_| ()) }
-    );
+    run_test!("companion_proxy: connect", success, failure, async {
+        CompanionProxy::connect(provider).await.map(|_| ())
+    });
 
     let mut client = match CompanionProxy::connect(provider).await {
         Ok(c) => c,

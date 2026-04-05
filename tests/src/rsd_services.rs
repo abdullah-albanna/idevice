@@ -85,24 +85,19 @@ pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failur
             return;
         };
 
-        run_test!(
-            "rsd: AppService list_apps",
-            success,
-            failure,
-            async {
-                let mut svc: AppServiceClient<Box<dyn ReadWrite>> =
-                    AppServiceClient::connect_rsd(&mut adapter, &mut handshake).await?;
-                let apps = svc.list_apps(false, true, false, false, true).await?;
-                if apps.is_empty() {
-                    Err(idevice::IdeviceError::UnexpectedResponse(
-                        "app list was empty".into(),
-                    ))
-                } else {
-                    println!("({} apps)", apps.len());
-                    Ok(())
-                }
+        run_test!("rsd: AppService list_apps", success, failure, async {
+            let mut svc: AppServiceClient<Box<dyn ReadWrite>> =
+                AppServiceClient::connect_rsd(&mut adapter, &mut handshake).await?;
+            let apps = svc.list_apps(false, true, false, false, true).await?;
+            if apps.is_empty() {
+                Err(idevice::IdeviceError::UnexpectedResponse(
+                    "app list was empty".into(),
+                ))
+            } else {
+                println!("({} apps)", apps.len());
+                Ok(())
             }
-        );
+        });
     }
 
     // ── InstallcoordinationProxy ──────────────────────────────────────────────
@@ -133,18 +128,13 @@ pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failur
             return;
         };
 
-        run_test!(
-            "rsd: OpenStdioSocket read_uuid",
-            success,
-            failure,
-            async {
-                let mut svc: OpenStdioSocketClient =
-                    OpenStdioSocketClient::connect_rsd(&mut adapter, &mut handshake).await?;
-                let uuid = svc.read_uuid().await?;
-                println!("({uuid})");
-                Ok::<(), idevice::IdeviceError>(())
-            }
-        );
+        run_test!("rsd: OpenStdioSocket read_uuid", success, failure, async {
+            let mut svc: OpenStdioSocketClient =
+                OpenStdioSocketClient::connect_rsd(&mut adapter, &mut handshake).await?;
+            let uuid = svc.read_uuid().await?;
+            println!("({uuid})");
+            Ok::<(), idevice::IdeviceError>(())
+        });
     }
 
     // ── DebugProxy ────────────────────────────────────────────────────────────
@@ -177,24 +167,19 @@ pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failur
             return;
         };
 
-        run_test!(
-            "rsd: AppService list_processes",
-            success,
-            failure,
-            async {
-                let mut svc: AppServiceClient<Box<dyn ReadWrite>> =
-                    AppServiceClient::connect_rsd(&mut adapter, &mut handshake).await?;
-                let procs = svc.list_processes().await?;
-                if procs.is_empty() {
-                    Err(idevice::IdeviceError::UnexpectedResponse(
-                        "process list was empty".into(),
-                    ))
-                } else {
-                    println!("({} processes)", procs.len());
-                    Ok(())
-                }
+        run_test!("rsd: AppService list_processes", success, failure, async {
+            let mut svc: AppServiceClient<Box<dyn ReadWrite>> =
+                AppServiceClient::connect_rsd(&mut adapter, &mut handshake).await?;
+            let procs = svc.list_processes().await?;
+            if procs.is_empty() {
+                Err(idevice::IdeviceError::UnexpectedResponse(
+                    "process list was empty".into(),
+                ))
+            } else {
+                println!("({} processes)", procs.len());
+                Ok(())
             }
-        );
+        });
     }
 
     // Launch Settings, verify PID, then send SIGTERM to clean up.

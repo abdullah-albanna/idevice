@@ -7,12 +7,11 @@ use idevice::{
 };
 
 pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failure: &mut u32) {
-    run_test!(
-        "springboard: connect",
-        success,
-        failure,
-        async { SpringBoardServicesClient::connect(provider).await.map(|_| ()) }
-    );
+    run_test!("springboard: connect", success, failure, async {
+        SpringBoardServicesClient::connect(provider)
+            .await
+            .map(|_| ())
+    });
 
     let mut client = match SpringBoardServicesClient::connect(provider).await {
         Ok(c) => c,
@@ -42,12 +41,9 @@ pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failur
         async { client.get_homescreen_icon_metrics().await.map(|_| ()) }
     );
 
-    run_test!(
-        "springboard: get_icon_state",
-        success,
-        failure,
-        async { client.get_icon_state(Some("2")).await.map(|_| ()) }
-    );
+    run_test!("springboard: get_icon_state", success, failure, async {
+        client.get_icon_state(Some("2")).await.map(|_| ())
+    });
 
     run_test!(
         "springboard: get_icon_pngdata (com.apple.Preferences)",

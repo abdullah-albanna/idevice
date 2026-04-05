@@ -7,24 +7,17 @@ use idevice::{
 };
 
 pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failure: &mut u32) {
-    run_test!(
-        "location_simulation: connect",
-        success,
-        failure,
-        async {
-            match LocationSimulationService::connect(provider).await {
-                Ok(_) => Ok(()),
-                // iOS 17+ removed this lockdown service; use DVT location simulation instead
-                Err(idevice::IdeviceError::UnknownErrorType(ref s))
-                    if s.contains("InvalidService") =>
-                {
-                    println!("(not available on iOS 17+, DVT location simulation used instead)");
-                    Ok(())
-                }
-                Err(e) => Err(e),
+    run_test!("location_simulation: connect", success, failure, async {
+        match LocationSimulationService::connect(provider).await {
+            Ok(_) => Ok(()),
+            // iOS 17+ removed this lockdown service; use DVT location simulation instead
+            Err(idevice::IdeviceError::UnknownErrorType(ref s)) if s.contains("InvalidService") => {
+                println!("(not available on iOS 17+, DVT location simulation used instead)");
+                Ok(())
             }
+            Err(e) => Err(e),
         }
-    );
+    });
 
     let mut client = match LocationSimulationService::connect(provider).await {
         Ok(c) => c,
@@ -33,9 +26,7 @@ pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failur
             return;
         }
         Err(e) => {
-            println!(
-                "  location_simulation: cannot connect ({e}), skipping remaining tests"
-            );
+            println!("  location_simulation: cannot connect ({e}), skipping remaining tests");
             *failure += 1;
             return;
         }
@@ -50,10 +41,7 @@ pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failur
     );
 
     // Clear the simulated location
-    run_test!(
-        "location_simulation: clear",
-        success,
-        failure,
-        async { client.clear().await }
-    );
+    run_test!("location_simulation: clear", success, failure, async {
+        client.clear().await
+    });
 }

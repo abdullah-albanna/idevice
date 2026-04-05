@@ -10,12 +10,9 @@ use idevice::{
 const RECV_TIMEOUT: Duration = Duration::from_secs(10);
 
 pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failure: &mut u32) {
-    run_test!(
-        "os_trace_relay: connect",
-        success,
-        failure,
-        async { OsTraceRelayClient::connect(provider).await.map(|_| ()) }
-    );
+    run_test!("os_trace_relay: connect", success, failure, async {
+        OsTraceRelayClient::connect(provider).await.map(|_| ())
+    });
 
     let mut client = match OsTraceRelayClient::connect(provider).await {
         Ok(c) => c,
@@ -26,22 +23,17 @@ pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failur
         }
     };
 
-    run_test!(
-        "os_trace_relay: get_pid_list",
-        success,
-        failure,
-        async {
-            let pids = client.get_pid_list().await?;
-            if pids.is_empty() {
-                Err(idevice::IdeviceError::UnexpectedResponse(
-                    "pid list was empty".into(),
-                ))
-            } else {
-                println!("({} pids)", pids.len());
-                Ok(())
-            }
+    run_test!("os_trace_relay: get_pid_list", success, failure, async {
+        let pids = client.get_pid_list().await?;
+        if pids.is_empty() {
+            Err(idevice::IdeviceError::UnexpectedResponse(
+                "pid list was empty".into(),
+            ))
+        } else {
+            println!("({} pids)", pids.len());
+            Ok(())
         }
-    );
+    });
 
     // start_trace consumes the client; use a fresh connection so the PidList
     // exchange above doesn't leave the socket in an unexpected state.

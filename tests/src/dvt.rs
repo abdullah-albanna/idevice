@@ -30,9 +30,7 @@ use idevice::{
 const STREAM_TIMEOUT: Duration = Duration::from_secs(15);
 
 /// Try to connect via CoreDeviceProxy + RSD (iOS 17+); fall back to Lockdown.
-async fn connect(
-    provider: &dyn IdeviceProvider,
-) -> Option<RemoteServerClient<Box<dyn ReadWrite>>> {
+async fn connect(provider: &dyn IdeviceProvider) -> Option<RemoteServerClient<Box<dyn ReadWrite>>> {
     match CoreDeviceProxy::connect(provider).await {
         Ok(proxy) => {
             let rsd_port = proxy.tunnel_info().server_rsd_port;
@@ -98,7 +96,7 @@ pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failur
                     Err(_) => {
                         return Err(idevice::IdeviceError::UnexpectedResponse(
                             "timed out waiting for network event".into(),
-                        ))
+                        ));
                     }
                 }
                 nm.stop_monitoring().await
@@ -127,7 +125,9 @@ pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failur
     let mut remote = match connect(provider).await {
         Some(c) => c,
         None => {
-            println!("  dvt: cannot establish RemoteServer connection, skipping remaining DVT tests");
+            println!(
+                "  dvt: cannot establish RemoteServer connection, skipping remaining DVT tests"
+            );
             *failure += 1;
             return;
         }
@@ -135,12 +135,9 @@ pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failur
     println!("  dvt: RemoteServer connected                             [ OK  ]");
 
     // ── DeviceInfo ────────────────────────────────────────────────────────────
-    run_test!(
-        "dvt: DeviceInfo::new",
-        success,
-        failure,
-        async { DeviceInfoClient::new(&mut remote).await.map(|_| ()) }
-    );
+    run_test!("dvt: DeviceInfo::new", success, failure, async {
+        DeviceInfoClient::new(&mut remote).await.map(|_| ())
+    });
     {
         let mut di = match DeviceInfoClient::new(&mut remote).await {
             Ok(c) => c,
@@ -303,13 +300,7 @@ pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failur
             failure,
             async {
                 let pid = pc
-                    .launch_app(
-                        "com.apple.Preferences",
-                        None,
-                        None,
-                        false,
-                        true,
-                    )
+                    .launch_app("com.apple.Preferences", None, None, false, true)
                     .await?;
                 println!("(pid={pid})");
                 pc.kill_app(pid).await?;
@@ -366,7 +357,7 @@ pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failur
                 Err(_) => {
                     return Err(idevice::IdeviceError::UnexpectedResponse(
                         "timed out waiting for sysmontap sample".into(),
-                    ))
+                    ));
                 }
             }
             sm.stop().await
@@ -420,12 +411,9 @@ pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failur
             async { ls.set(37.3318, -122.0312).await }
         );
 
-        run_test!(
-            "dvt: LocationSimulation clear",
-            success,
-            failure,
-            async { ls.clear().await }
-        );
+        run_test!("dvt: LocationSimulation clear", success, failure, async {
+            ls.clear().await
+        });
     }
 
     // ── EnergyMonitor ─────────────────────────────────────────────────────────
@@ -475,7 +463,7 @@ pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failur
                     Err(_) => {
                         return Err(idevice::IdeviceError::UnexpectedResponse(
                             "timed out waiting for graphics sample".into(),
-                        ))
+                        ));
                     }
                 }
                 gfx.stop_sampling().await
@@ -502,12 +490,7 @@ pub async fn run_tests(provider: &dyn IdeviceProvider, success: &mut u32, failur
                 notif.start_notifications().await?;
                 // This may time out on a quiet device — treat timeout as pass
                 // since we at least verified start_notifications works.
-                match tokio::time::timeout(
-                    Duration::from_secs(5),
-                    notif.get_notification(),
-                )
-                .await
-                {
+                match tokio::time::timeout(Duration::from_secs(5), notif.get_notification()).await {
                     Ok(Ok(_)) | Err(_) => {
                         notif.stop_notifications().await?;
                         Ok(())
