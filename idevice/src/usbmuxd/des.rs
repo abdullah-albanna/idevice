@@ -55,14 +55,14 @@ impl TryFrom<DeviceListResponse> for UsbmuxdDevice {
                         ));
                     }
 
-                    match addr[0] {
-                        0x02 => {
+                    match addr[0] as libc::c_int {
+                        libc::AF_INET => {
                             // IPv4
                             Connection::Network(IpAddr::V4(Ipv4Addr::new(
                                 addr[4], addr[5], addr[6], addr[7],
                             )))
                         }
-                        0x1E => {
+                        libc::AF_INET6 => {
                             // IPv6
                             if addr.len() < 24 {
                                 warn!("IPv6 address is less than 24 bytes");
@@ -91,7 +91,7 @@ impl TryFrom<DeviceListResponse> for UsbmuxdDevice {
                                         .into(),
                                 ));
                             }
-                            if addr[1] == 0x1E {
+                            if addr[1] as libc::c_int == libc::AF_INET6 {
                                 // IPv6 address starts at offset 8 in sockaddr_in6
                                 Connection::Network(IpAddr::V6(Ipv6Addr::new(
                                     u16::from_be_bytes([addr[8], addr[9]]),
