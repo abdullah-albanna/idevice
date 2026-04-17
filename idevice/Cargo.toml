@@ -68,7 +68,11 @@ rand = { version = "0.10" }
 obfstr = { version = "0.4", optional = true }
 
 async_zip = { version = "0.0.18", optional = true }
+
 libc = "0.2"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Networking_WinSock"] }
 
 [dev-dependencies]
 tokio = { version = "1.43", features = ["full"] }
@@ -109,7 +113,16 @@ installation_proxy = [
   "tokio/fs",
 ]
 installcoordination_proxy = []
-xctest = ["dvt", "installation_proxy", "afc", "dep:uuid", "dep:ns-keyed-archive", "tunnel_tcp_stack", "rsd", "core_device_proxy"]
+xctest = [
+  "dvt",
+  "installation_proxy",
+  "afc",
+  "dep:uuid",
+  "dep:ns-keyed-archive",
+  "tunnel_tcp_stack",
+  "rsd",
+  "core_device_proxy",
+]
 springboardservices = []
 misagent = []
 mobile_image_mounter = ["dep:sha2"]

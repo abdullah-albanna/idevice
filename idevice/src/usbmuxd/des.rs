@@ -5,6 +5,11 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use serde::Deserialize;
 use tracing::{debug, warn};
 
+#[cfg(not(windows))]
+use libc::{AF_INET, AF_INET6};
+#[cfg(windows)]
+use windows_sys::Win32::Networking::WinSock::{AF_INET, AF_INET6};
+
 use crate::{
     IdeviceError,
     usbmuxd::{Connection, UsbmuxdDevice},
@@ -55,14 +60,14 @@ impl TryFrom<DeviceListResponse> for UsbmuxdDevice {
                         ));
                     }
 
-                    match addr[0] as libc::c_int {
-                        libc::AF_INET => {
+                    match addr[0] as _ {
+                        AF_INET => {
                             // IPv4
                             Connection::Network(IpAddr::V4(Ipv4Addr::new(
                                 addr[4], addr[5], addr[6], addr[7],
                             )))
                         }
-                        libc::AF_INET6 => {
+                        AF_INET6 => {
                             // IPv6
                             if addr.len() < 24 {
                                 warn!("IPv6 address is less than 24 bytes");
@@ -91,7 +96,7 @@ impl TryFrom<DeviceListResponse> for UsbmuxdDevice {
                                         .into(),
                                 ));
                             }
-                            if addr[1] as libc::c_int == libc::AF_INET6 {
+                            if addr[1] == AF_INET6 as u8 {
                                 // IPv6 address starts at offset 8 in sockaddr_in6
                                 Connection::Network(IpAddr::V6(Ipv6Addr::new(
                                     u16::from_be_bytes([addr[8], addr[9]]),

@@ -174,13 +174,13 @@ pub(crate) fn c_addr_to_rust(addr: *const SockAddr) -> Result<(IpAddr, Option<u3
             AF_INET => {
                 let a = &*(addr as *const sockaddr_in);
                 let ip_be = a.sin_addr.S_un.S_addr;
-                Ok(IpAddr::V4(Ipv4Addr::from(u32::from_be(ip_be))), None)
+                Ok((IpAddr::V4(Ipv4Addr::from(u32::from_be(ip_be))), None))
             }
             AF_INET6 => {
                 let a = &*(addr as *const sockaddr_in6);
                 let bytes: [u8; 16] = a.sin6_addr.u.Byte;
                 let scope_id: u32 = a.Anonymous.sin6_scope_id;
-                Ok(IpAddr::V6(Ipv6Addr::from(bytes)), Some(scope_id))
+                Ok((IpAddr::V6(Ipv6Addr::from(bytes)), Some(scope_id)))
             }
             _ => {
                 tracing::error!("Unsupported socket address family: {}", (*addr).sa_family);
