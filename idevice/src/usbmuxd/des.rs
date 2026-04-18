@@ -7,8 +7,11 @@ use tracing::{debug, warn};
 
 #[cfg(not(windows))]
 use libc::{AF_INET, AF_INET6};
+
 #[cfg(windows)]
-use windows_sys::Win32::Networking::WinSock::{AF_INET, AF_INET6};
+const AF_INET: i32 = 2;
+#[cfg(windows)]
+const AF_INET6: i32 = 23;
 
 use crate::{
     IdeviceError,
